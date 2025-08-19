@@ -1,0 +1,1 @@
+# Redis ZSET/LIST との橋渡し
