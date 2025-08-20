@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .features.drills.router import router as drills_router
+from .features.talk.router import router as talk_router
 
 app = FastAPI()
 app.add_middleware(
@@ -17,3 +18,4 @@ def health():
     return {"ok": True}
 
 app.include_router(drills_router)
+app.include_router(talk_router)
