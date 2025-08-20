@@ -49,3 +49,36 @@ async def explain_stream(item_id: int = Query(...), user_answer: str = Query("")
         yield "event: done\ndata: [DONE]\n\n"
 
     return StreamingResponse(sse_gen(), media_type="text/event-stream")
+
+@router.get("/answer_and_explain/stream")
+async def answer_and_explain_stream(
+    user_id: int = Query(...),
+    item_id: int = Query(...),
+    quality: int = Query(..., ge=0, le=3),
+    user_answer: str = Query(""),
+    s: AsyncSession = Depends(get_session),
+):
+    # 1.SRS更新
+    try: 
+        await update_srs(s, user_id, item_id, quality)
+        await s.commit()
+    except Exception as e:
+        raise HTTPException(400, f"SRS update failed: {e}")
+    
+    # 2.アイテムを取得
+    it = (await s.execute(select(Item).where(Item.id == item_id))).scalars().first()
+    if not it:
+        raise HTTPException(404, "item not found")
+    # 3. LLMへ
+    messages = build_prompt(it.jp_prompt, user_answer, it.grammar_hint)
+
+    def sse_gen():
+        try:
+            for chunk in stream_coach_events(messages):
+                yield f"event: token\ndata: {chunk}\n\n"
+            yield "event: done\ndata: [DONE]\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {str(e)}\n\n"
+    
+    return StreamingResponse(sse_gen(), media_type="text/event-stream")
+
