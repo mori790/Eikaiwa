@@ -220,29 +220,38 @@ export default function Page() {
     });
     await waitData;
 
+    // 完全なクリーンアップ
     setRecording(false);
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+    mediaStreamRef.current = null;
+    recorderRef.current = null;
+    startAtRef.current = null;
 
     const mime = rec?.mimeType || "audio/webm";
     const blob = new Blob(chunksRef.current, { type: mime });
+    
+    // デバッグログ出力
+    console.log(`Recording completed: ${blob.size} bytes, duration: ${elapsed}ms`);
+    
+    // chunks をクリア（完全なリセット）
     chunksRef.current = [];
 
-    // 空や極小のデータは送らない
-    if (!blob || blob.size < 1500) {
-      setError("録音が短すぎます。もう一度お試しください。");
+    // 空や極小のデータは送らない（バックエンドと統一）
+    if (!blob || blob.size < 800) {
+      setError(`録音が短すぎます (${blob.size} bytes)。もう一度お試しください。`);
       return;
     }
 
     await sendAnswerBlob(blob, mime);
   }
 
-  // ワンクリック3秒録音（オプション）
-  async function record3sec() {
+  // ワンクリック7秒録音
+  async function record7sec() {
     if (recording || loading) return;
     await startRecording();
     setTimeout(() => {
       void stopRecordingAndSend();
-    }, 3000);
+    }, 7000);
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -416,27 +425,11 @@ export default function Page() {
             {/* 録音コントロール */}
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
-                onPointerDown={(e) => void startRecording(e)}
-                onPointerUp={(e) => void stopRecordingAndSend(e)}
-                onPointerLeave={() => recording && void stopRecordingAndSend()}
-                disabled={!item || loading}
-                style={{ touchAction: "none" }}
-                className={
-                  "rounded-xl px-4 py-2 text-sm font-medium border transition " +
-                  (recording
-                    ? "bg-red-600 text-white border-red-700"
-                    : "bg-blue-600 text-white border-blue-700 hover:bg-blue-700 disabled:opacity-50")
-                }
-              >
-                {recording ? "Release to Send" : "🎙️ Hold to Speak"}
-              </button>
-
-              <button
-                onClick={() => void record3sec()}
+                onClick={() => void record7sec()}
                 disabled={!item || loading || recording}
-                className="rounded-xl border px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                className="rounded-xl bg-blue-600 text-white border-blue-700 hover:bg-blue-700 disabled:opacity-50 px-4 py-2 text-sm font-medium border transition"
               >
-                🎙️ Speak (3s)
+                🎙️ Speak (7s)
               </button>
 
               <button

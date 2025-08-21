@@ -84,7 +84,7 @@ async def talk_answer(
     # 2.STT
     raw = await audio.read()
     if not raw or len(raw) < 800:
-        raise HTTPException(400, "no audio captured (too short)")
+        raise HTTPException(400, f"音声データが不足しています (size: {len(raw) if raw else 0} bytes, minimum: 800)")
     transcript = transcribe_bytes(raw, filename=audio.filename or "speech.webm")
 
     # 3.採点・解説
