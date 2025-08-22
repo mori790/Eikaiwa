@@ -10,7 +10,7 @@ def transcribe_bytes(data: bytes, filename: str = "speech.webm", model: str = "g
     音声(STT)：webm/mp3/wav などのバイト列 -> 文字列
     """
     if not data or len(data) < 800:
-        raise ValueError("empty_audio")
+        raise ValueError(f"音声データが不足しています (size: {len(data) if data else 0} bytes, minimum: 800)")
     
     bio = io.BytesIO(data)
     bio.name = filename  # SDKが拡張子を参照する実装もあるため付与
