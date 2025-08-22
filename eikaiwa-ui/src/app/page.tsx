@@ -4,12 +4,12 @@ import React, { useEffect, useRef, useState } from "react";
 /**
  * Talk Mode UI – 10問ターン制のボイス会話（改良版）
  * - Start Talk: サーバで10問を確定
- * - Hold to Speak: 長押しで録音 → 離したら送信
+ * - Speak (7s): クリックで7秒間録音 → 自動送信
  * - サーバが STT → 採点+解説(JSON) → TTS音声返却
  * - 返答後は「Next ▶」ボタンで次へ（自動遷移はしない）
  */
 
-const API_BASE = "http://localhost:8000"; // CORS の許可と一致させてね
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api/proxy";
 
 // 型
 type DrillItem = {
@@ -229,16 +229,20 @@ export default function Page() {
 
     const mime = rec?.mimeType || "audio/webm";
     const blob = new Blob(chunksRef.current, { type: mime });
-    
+
     // デバッグログ出力
-    console.log(`Recording completed: ${blob.size} bytes, duration: ${elapsed}ms`);
-    
+    console.log(
+      `Recording completed: ${blob.size} bytes, duration: ${elapsed}ms`
+    );
+
     // chunks をクリア（完全なリセット）
     chunksRef.current = [];
 
     // 空や極小のデータは送らない（バックエンドと統一）
     if (!blob || blob.size < 800) {
-      setError(`録音が短すぎます (${blob.size} bytes)。もう一度お試しください。`);
+      setError(
+        `録音が短すぎます (${blob.size} bytes)。もう一度お試しください。`
+      );
       return;
     }
 
@@ -529,8 +533,8 @@ export default function Page() {
               を押します（10問を確定）。
             </li>
             <li>
-              各問題で <b>🎙️ Hold to Speak</b>{" "}
-              を長押しして話し、離すと送信（または <b>Speak (3s)</b>）。
+              各問題で <b>🎙️ Speak (7s)</b>{" "}
+              をクリックすると7秒間録音して自動送信されます。
             </li>
             <li>
               サーバが STT → 採点+解説 → TTS の音声を返します。
