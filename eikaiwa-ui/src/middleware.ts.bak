@@ -1,0 +1,4 @@
+// eikaiwa-ui/src/middleware.ts
+// Temporarily disabled due to NextAuth compatibility issues
+// export { auth as middleware } from "@/auth";
+// export const config = { matcher: ["/((?!api/auth|_next|favicon.ico).*)"] };

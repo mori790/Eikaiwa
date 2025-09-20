@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .features.drills.router import router as drills_router
 from .features.talk.router import router as talk_router
+# services/api/app/main.py の一番最初で
+from dotenv import load_dotenv
+load_dotenv()  # .env をカレントディレクトリから読み込み
 
 app = FastAPI()
 app.add_middleware(

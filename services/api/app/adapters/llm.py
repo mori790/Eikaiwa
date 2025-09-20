@@ -1,6 +1,9 @@
 from typing import AsyncGenerator, Iterable
 from openai import OpenAI
 from ..core.config import settings
+# services/api/app/main.py の一番最初で
+from dotenv import load_dotenv
+load_dotenv()  # .env をカレントディレクトリから読み込み
 
 client = OpenAI(api_key=settings.openai_api_key)
 
